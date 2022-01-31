@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#PBS -l walltime=00:10:00
+#PBS -l select=1:ncpus=16:mem=16gb
+
+echo "<qsub_standard_output>"
+date
+echo "<qstat -f $PBS_JOBID>"
+qstat -f $PBS_JOBID
+echo "</qstat -f $PBS_JOBID>"
+
+source $HOME/../../gmallia/home/crystal_setup
+
+export MODULEPATH=$MODULEPATH:$HOME/../../gmallia/home/CRYSTAL17_cx1/v2.2gnu/modules
+echo "MODULEPATH= "$MODULEPATH
+
+module load gcc/6.2.0
+module load  mpich/3.2.1
+module list
+cd $PBS_O_WORKDIR
+
+INFILE="test_batch0.d12"
+echo $INFILE
+
+/rds/general/user/gmallia/home/CRYSTAL17_cx1/v2.2gnu/runcryP $INFILE
+
+
