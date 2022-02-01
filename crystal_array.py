@@ -3,6 +3,7 @@ import numpy as np
 import json
 from pathlib import Path
 import shutil
+from crystal_helper import *
 
 iteration = int(np.loadtxt("./iteration.txt").split()[-1].strip())
 chunk_size = 10
@@ -21,8 +22,7 @@ for i,chunk in enumerate(chunked_database):
     p.mkdir(parents=True,exist_ok=True)
     for structure in chunk:
         #write crystal input in chunk folder
-        Path("./ComputeDir/batch"+str(iteration)+"/chunk"+str(i).mkdir(parents=True,exist_ok=True))
-        cry_input=Crystal_input("./ComputeDir/batch"+str(iteration)+"/chunk"+str(i)+"/"+structure["material_id"]+".d12",structure["structure"],shrink=8)
+        cry_input=Crystal_input(str(p)+"/"+structure["material_id"]+".d12",structure["structure"],shrink=8)
         cry_input.write_cry_input()
     
     shutil.copy("./ComputeDir/array_script.qsub",str(p))
