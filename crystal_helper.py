@@ -18,11 +18,11 @@ def find_elements(structure):
     
 class Crystal_input:
     
-    def __init__(self,input_name,structure,shrink,FORCECALC=False):
+    def __init__(self,input_name,structure,FORCECALC=False):
         self.name = input_name
         self.structure = structure
         self.elements = find_elements(self.structure)
-        self.shrink = shrink
+        self.shrink = self.cry_shrink()
         self.FORCECALC = FORCECALC
         
         
@@ -125,6 +125,9 @@ class Crystal_input:
 #         for site in self.sym_distinct_sites:
 #             geom_block.append(str(site.species.elements[0].Z)+" "+str(round(site.a,5))+" "+str(round(site.b,5))+" "+str(round(site.c,5)))
 #         return geom_block
+    def cry_shrink(self,spacing=0.2):
+        short_vector=np.min(np.array(self.structure.lattice.reciprocal_lattice.lengths))
+        return int(np.ceil(short_vector/spacing))
 
     def write_cry_input(self):
         self.write_cry_gui(self.name.replace(".d12",".gui"))
