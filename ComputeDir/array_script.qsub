@@ -1,0 +1,22 @@
+#!/bin/bash -x
+
+#PBS -l walltime=00:10:00
+#PBS -l select=1:ncpus=16:mem=16gb
+#PBS -J 1-2
+
+
+source $HOME/../../gmallia/home/crystal_setup
+
+export MODULEPATH=$MODULEPATH:$HOME/../../gmallia/home/CRYSTAL17_cx1/v2.2gnu/modules
+echo "MODULEPATH= "$MODULEPATH
+
+module load gcc/6.2.0
+module load  mpich/3.2.1
+module list
+cd $PBS_O_WORKDIR
+
+INFILE=$(ls -1 *d12 | head -n $PBS_ARRAY_INDEX | tail -n 1)
+echo $INFILE
+
+/rds/general/user/fb618/home/DeepRL/V1/ComputeDir/runcryP ${INFILE%.*}
+#/rds/general/user/gmallia/home/CRYSTAL17_cx1/v2.2gnu/runcryP
