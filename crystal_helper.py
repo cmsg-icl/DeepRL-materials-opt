@@ -9,7 +9,13 @@ import pickle
 with open(r"bs_dict.pkl", "rb") as bs_dict_file:
     basis_sets = pickle.load(bs_dict_file)
     
-currently_used_bs=['H_pob_DZVP_rev2','', 'Li_pob_DZVP_rev2', 'Be_pob_DZVP_rev2', 'B_pob_DZVP_rev2', 'C_pob_DZVP_rev2', 'N_pob_DZVP_rev2', 'O_pob_DZVP_rev2', 'F_pob_DZVP_rev2','Ne_6-31G', 'Na_pob_DZVP_rev2', 'Mg_pob_DZVP_rev2', 'Al_pob_DZVP_rev2', 'Si_pob_DZVP_rev2', 'P_pob_DZVP_rev2', 'S_pob_DZVP_rev2', 'Cl_pob_DZVP_rev2', 'Ar_6-31G','K_pob_DZVP_rev2', 'Ca_pob_DZVP_rev2', 'Sc_pob_DZVP_rev2', 'Ti_pob_DZVP_rev2', 'V_pob_DZVP_rev2', 'Cr_pob_DZVP_rev2', 'Mn_pob_DZVP_rev2', 'Fe_pob_DZVP_rev2', 'Co_pob_DZVP_rev2', 'Ni_pob_DZVP_rev2', 'Cu_pob_DZVP_rev2', 'Zn_pob_DZVP_rev2', 'Ga_pob_DZVP_rev2', 'Ge_pob_DZVP_rev2', 'As_pob_DZVP_rev2', 'Se_pob_DZVP_rev2', 'Br_pob_DZVP_rev2','', 'Rb_POB_DZVP_2018', 'Sr_POB_DZVP_2018','Y_POB_DZVP_2018', 'Zr_POB_DZVP_2018', 'Nb_POB_DZVP_2018','','Mo_POB_DZVP_2018', 'Ru_POB_DZVP_2018', 'Rh_POB_DZVP_2018', 'Pd_POB_DZVP_2018', 'Ag_POB_DZVP_2018', 'Cd_POB_DZVP_2018', 'In_POB_DZVP_2018', 'Sn_POB_DZVP_2018', 'Sb_POB_DZVP_2018', 'Te_POB_DZVP_2018', 'I_POB_DZVP_2018']
+currently_used_bs=['H_pob_DZVP_rev2','', 'Li_pob_DZVP_rev2', 'Be_pob_DZVP_rev2', 'B_pob_DZVP_rev2', 'C_pob_DZVP_rev2', 'N_pob_DZVP_rev2', 'O_pob_DZVP_rev2',
+'F_pob_DZVP_rev2','Ne_6-31G', 'Na_pob_DZVP_rev2', 'Mg_pob_DZVP_rev2', 'Al_pob_DZVP_rev2', 'Si_pob_DZVP_rev2', 'P_pob_DZVP_rev2', 'S_pob_DZVP_rev2',
+'Cl_pob_DZVP_rev2', 'Ar_6-31G','K_pob_DZVP_rev2', 'Ca_pob_DZVP_rev2', 'Sc_pob_DZVP_rev2', 'Ti_pob_DZVP_rev2', 'V_pob_DZVP_rev2', 'Cr_pob_DZVP_rev2',
+'Mn_pob_DZVP_rev2', 'Fe_pob_DZVP_rev2', 'Co_pob_DZVP_rev2', 'Ni_pob_DZVP_rev2', 'Cu_pob_DZVP_rev2', 'Zn_pob_DZVP_rev2', 'Ga_pob_DZVP_rev2',
+'Ge_pob_DZVP_rev2', 'As_pob_DZVP_rev2', 'Se_pob_DZVP_rev2', 'Br_pob_DZVP_rev2','', 'Rb_POB_DZVP_2018', 'Sr_POB_DZVP_2018','Y_POB_DZVP_2018',
+'Zr_POB_DZVP_2018', 'Nb_POB_DZVP_2018','','Mo_POB_DZVP_2018', 'Ru_POB_DZVP_2018', 'Rh_POB_DZVP_2018', 'Pd_POB_DZVP_2018', 'Ag_POB_DZVP_2018',
+'Cd_POB_DZVP_2018', 'In_POB_DZVP_2018', 'Sn_POB_DZVP_2018', 'Sb_POB_DZVP_2018', 'Te_POB_DZVP_2018', 'I_POB_DZVP_2018']
     
 def find_elements(structure):
     ineq_elements=list(set(structure.species))
@@ -30,64 +36,46 @@ class Crystal_input:
 
         with open(gui_file, 'w') as file: 
 
-            atoms = SpacegroupAnalyzer(self.structure).get_primitive_standard_structure()
+            try:
+                atoms = SpacegroupAnalyzer(self.structure).get_primitive_standard_structure()
+                #Is the structure symmetrysed?
+                if 'SymmetrizedStructure' not in str(type(atoms)):
+                    atoms_symm = SpacegroupAnalyzer(atoms).get_symmetrized_structure()
+                symmetry = True
 
-            #Is the structure symmetrysed?
-            if 'SymmetrizedStructure' not in str(type(atoms)):
-                atoms_symm = SpacegroupAnalyzer(atoms).get_symmetrized_structure()
-
+            except:
+                atoms_symm = atoms
+                symmetry = False
+            
             if dimensionality == 3:
-
+                
                 #First line 
                 file.writelines('3   1   1\n')
-
+                
                 #Cell vectors
                 for vector in atoms.lattice.matrix:
                     file.writelines(' '.join(str(n) for n in vector)+'\n')
-
+                    
                 #N symm ops
-                n_symmops = len(SpacegroupAnalyzer(atoms_symm).get_space_group_operations())
-                file.writelines('{}\n'.format(str(n_symmops)))
+                if symmetry == True:
+                    n_symmops = len(SpacegroupAnalyzer(atoms_symm).get_space_group_operations())
 
-                #symm ops
-                for symmops in SpacegroupAnalyzer(atoms_symm).get_symmetry_operations(cartesian=True):  
-                    file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmops.rotation_matrix[0])))
-                    file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmops.rotation_matrix[1])))
-                    file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmops.rotation_matrix[2])))
-                    file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmops.translation_vector)))
+                    file.writelines('{}\n'.format(str(n_symmops)))
 
-            elif dimensionality == 2:
-                file.writelines('2   1   1\n')
-                #Cell vectors
-                z_component = ['0.0000', '0.00000', '500.00000']
-                for i,vector in enumerate(atoms.lattice.matrix[0:3,0:2]):
-                    file.writelines(' '.join(str(n) for n in vector)+' '+z_component[i]+'\n')  
-                #Center the slab
-                #First center at z = 0.5
-                atoms = center_slab(atoms)
-
-                #Then center at z=0.0
-                translation = np.array([0.0, 0.0, -0.5])
-                atoms.translate_sites(list(range(atoms.num_sites)),
-                                             translation, to_unit_cell=False)
-
-                #Remove symmops with z component
-                sg = SpacegroupAnalyzer(atoms)
-                ops = sg.get_symmetry_operations(cartesian=True)       
-                symmops = []
-                for op in ops:
-                    if op.translation_vector[2] == 0.:
-                        symmops.extend(op.rotation_matrix.tolist())
-                        symmops.extend([op.translation_vector.tolist()])  
-
-                #N symm ops
-                n_symmops = int(len(symmops)/4)
-                file.writelines('{}\n'.format(n_symmops))
-
-                #symm ops
-                for symmop in symmops:    
-                    file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmop)))
-
+                    #symm ops
+                    for symmops in SpacegroupAnalyzer(atoms_symm).get_symmetry_operations(cartesian=True):
+                        file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmops.rotation_matrix[0])))
+                        file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmops.rotation_matrix[1])))
+                        file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmops.rotation_matrix[2])))
+                        file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in symmops.translation_vector)))
+                else:
+                    n_symmops = 1
+                    # symm ops
+                    identity = np.array([[1.,0.,0.],[0.,1.,0.],[0.,0.,1.],[0.,0.,0.]])
+                    file.writelines('{}\n'.format(' '.join(str(np.around(n,8)) for n in identity[0])))
+                    file.writelines('{}\n'.format(' '.join(str(np.around(n, 8)) for n in identity[1])))
+                    file.writelines('{}\n'.format(' '.join(str(np.around(n, 8)) for n in identity[2])))
+                    file.writelines('{}\n'.format(' '.join(str(np.around(n, 8)) for n in identity[3])))
             #N atoms
             file.writelines('{}\n'.format(atoms.num_sites))
 
@@ -98,8 +86,10 @@ class Crystal_input:
                 file.writelines('{} {}\n'.format(atomic_number,atom_coord))
 
             #space group + n symm ops
-            file.writelines('{} {}'.format(SpacegroupAnalyzer(atoms).get_space_group_number(),len(SpacegroupAnalyzer(atoms).get_space_group_operations())))
-
+            if symmetry == True:
+                file.writelines('{} {}'.format(SpacegroupAnalyzer(atoms).get_space_group_number(),len(SpacegroupAnalyzer(atoms).get_space_group_operations())))
+            else:
+                file.writelines('1 1')
 #     def pmg_structure_to_geom_inp(self):
 #         geom_block=["CRYSTAL","0 0 0"]
 #         space_group=SpacegroupAnalyzer(self.structure, symprec=0.01, angle_tolerance=0.2)
@@ -138,10 +128,10 @@ class Crystal_input:
             bs_block += [s for s in basis_sets[currently_used_bs[element-1]].split("\r\n")]
         bs_block += ['99 0','ENDBS\n']
         dft_block = ["DFT","B3LYP","END\n"]
-        scf_block = ["TOLINTEG","7 7 7 7 14","SHRINK",str(self.shrink)+" "+str(self.shrink)+" "+str(2*self.shrink),"END"]
+        scf_block = ["TOLINTEG","7 7 7 7 14","SHRINK",str(int(self.shrink))+" "+str(int(2*self.shrink)),"END"]
         with open(self.name,'w') as file:
             cry_input_list=list(itertools.chain([self.name],geom_block,list(func_block),bs_block,dft_block,scf_block))
-            cry_input=[x+'\n' if "END" not in x else x for x in cry_input_list]#does CRYSTAL care about an empty line at the end?
+            cry_input=[x+'\n' if "END" not in x else x for x in cry_input_list]
             for line in cry_input:
                 file.writelines(line)
 
